@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../enhancer/enhancement_backend.dart';
+import '../enhancer/enhancement_screen.dart';
 import '../models/pdf_source.dart';
 import '../settings/app_settings.dart';
 
@@ -30,6 +32,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   late final PdfTextSearcher _textSearcher = PdfTextSearcher(_controller);
   final TextEditingController _pageInput = TextEditingController(text: '1');
   final TextEditingController _searchInput = TextEditingController();
+  final EnhancementBackend _enhancementBackend = createEnhancementBackend();
 
   Timer? _searchTimer;
   int _currentPage = 1;
@@ -171,6 +174,30 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
     );
   }
 
+  Future<void> _enhanceCurrentPdf() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EnhancementScreen(
+          source: widget.source,
+          backend: _enhancementBackend,
+        ),
+      ),
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    await Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (context) => PdfViewerScreen(
+          source: result.source,
+          settings: widget.settings,
+        ),
+      ),
+    );
+  }
+
   Future<void> _showOutline() async {
     if (_outline.isEmpty) {
       return;
@@ -266,6 +293,9 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             tooltip: 'More tools',
             onSelected: (action) async {
               switch (action) {
+                case _ViewerAction.enhance:
+                  await _enhanceCurrentPdf();
+                  break;
                 case _ViewerAction.zoomOut:
                   await _controller.zoomDown();
                   break;
@@ -284,6 +314,20 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _ViewerAction.enhance,
+                child: ListTile(
+                  leading: const Icon(Icons.auto_fix_high_rounded),
+                  title: const Text('Enhance PDF'),
+                  subtitle: Text(
+                    _enhancementBackend.available
+                        ? 'OCR missing text and add structure'
+                        : (_enhancementBackend.unavailableReason ??
+                            'Unavailable on this platform'),
+                  ),
+                ),
+              ),
+              const PopupMenuDivider(),
               const PopupMenuItem(
                 value: _ViewerAction.zoomOut,
                 child: ListTile(
@@ -362,6 +406,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 }
 
 enum _ViewerAction {
+  enhance,
   zoomOut,
   zoomIn,
   copyPage,
