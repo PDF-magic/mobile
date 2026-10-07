@@ -3,10 +3,16 @@
 import 'package:flutter/material.dart';
 
 import 'services/document_picker.dart';
+import 'settings/app_settings.dart';
 import 'viewer/pdf_viewer_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    required this.settings,
+    super.key,
+  });
+
+  final AppSettingsController settings;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -30,7 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(
-          builder: (context) => PdfViewerScreen(source: source),
+          builder: (context) => PdfViewerScreen(
+            source: source,
+            settings: widget.settings,
+          ),
         ),
       );
     } on Object catch (error) {
@@ -52,6 +61,21 @@ class _HomeScreenState extends State<HomeScreen> {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            tooltip: 'Toggle theme',
+            onPressed: () => widget.settings.toggleTheme(
+              Theme.of(context).brightness,
+            ),
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -74,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Open a PDF locally. Rendering, text selection, links, and pinch zoom stay on your device.',
+                    'Open a PDF locally. Rendering, text selection, links, search, and pinch zoom stay on your device.',
                     style: Theme.of(context).textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),

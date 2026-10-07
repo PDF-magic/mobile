@@ -14,6 +14,14 @@ sealed class PdfSource {
   final Uri? referenceUri;
 
   PdfDocumentRef createDocumentRef();
+
+  String pageReference(int pageNumber) {
+    final reference = referenceUri;
+    if (reference == null) {
+      return '$displayName#page=$pageNumber';
+    }
+    return reference.replace(fragment: 'page=$pageNumber').toString();
+  }
 }
 
 final class FilePdfSource extends PdfSource {
