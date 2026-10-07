@@ -15,15 +15,15 @@ The shared Flutter UI is intended for Android, iOS, Linux, and Ubuntu Touch-orie
 
 This project targets Flutter 3.47 or newer and Dart 3.13 or newer.
 
-If platform runner directories have not been generated in a checkout yet, create them with the matching Flutter SDK before running the app:
+Generate the standard Flutter Android, iOS, and Linux host projects while preserving PDF Magic's native PDF-open integrations:
 
 ```sh
-flutter create --platforms=android,ios,linux --org org.pdfmagic .
+./tool/bootstrap-platforms.sh
 flutter pub get
 flutter run
 ```
 
-Generated platform files should be reviewed before committing so mobile platform integration remains explicit.
+The bootstrap script generates the hosts from the installed Flutter SDK in a temporary directory, copies only the platform scaffolds into this checkout, and then restores PDF Magic's Android and iOS overlays. It deliberately uses the native application identifier `org.pdfmagic.mobile` while leaving the Dart package name `pdf_magic_mobile` unchanged.
 
 ## License
 

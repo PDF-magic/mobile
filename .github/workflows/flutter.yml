@@ -23,6 +23,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Generate platform hosts
+        run: ./tool/bootstrap-platforms.sh
+
       - name: Resolve dependencies
         run: flutter pub get
 
@@ -31,3 +34,6 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+      - name: Build Android debug app
+        run: flutter build apk --debug
