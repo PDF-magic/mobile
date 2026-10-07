@@ -39,6 +39,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   int _pageCount = 0;
   bool _viewerReady = false;
   bool _searchVisible = false;
+  int? _scrubPreviewPage;
   List<PdfOutlineNode> _outline = const [];
 
   @override
@@ -400,6 +401,81 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             ),
           Expanded(child: viewer),
         ],
+      ),
+      bottomNavigationBar: _viewerReady && _pageCount > 1
+          ? _DocumentScrubber(
+              page: _scrubPreviewPage ?? _currentPage,
+              pageCount: _pageCount,
+              onChanged: (page) {
+                setState(() => _scrubPreviewPage = page);
+              },
+              onChangeEnd: (page) async {
+                setState(() => _scrubPreviewPage = null);
+                await _goToPage(page);
+              },
+            )
+          : null,
+    );
+  }
+}
+
+class _DocumentScrubber extends StatelessWidget {
+  const _DocumentScrubber({
+    required this.page,
+    required this.pageCount,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
+
+  final int page;
+  final int pageCount;
+  final ValueChanged<int> onChanged;
+  final ValueChanged<int> onChangeEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      elevation: 3,
+      color: theme.colorScheme.surface,
+      child: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.fromLTRB(12, 2, 12, 4),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 44,
+              child: Text(
+                '$page',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelMedium,
+              ),
+            ),
+            Expanded(
+              child: Semantics(
+                label: 'Page scrubber',
+                value: 'Page $page of $pageCount',
+                child: Slider(
+                  min: 1,
+                  max: pageCount.toDouble(),
+                  value: page.clamp(1, pageCount).toDouble(),
+                  label: '$page',
+                  onChanged: (value) => onChanged(value.round()),
+                  onChangeEnd: (value) => onChangeEnd(value.round()),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 44,
+              child: Text(
+                '$pageCount',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelMedium,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
