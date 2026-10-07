@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import 'models/pdf_source.dart';
 import 'services/document_picker.dart';
+import 'services/system_pdf_open_service.dart';
 import 'settings/app_settings.dart';
 import 'viewer/pdf_viewer_screen.dart';
 
@@ -20,7 +24,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final DocumentPicker _picker = const DocumentPicker();
+  final SystemPdfOpenService _systemOpen = SystemPdfOpenService();
+  StreamSubscription<dynamic>? _systemOpenSubscription;
   bool _opening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _systemOpenSubscription = _systemOpen.listen(
+      onPdf: _openSource,
+      onError: _showOpenError,
+    );
+  }
+
+  @override
+  void dispose() {
+    _systemOpenSubscription?.cancel();
+    super.dispose();
+  }
 
   Future<void> _openPdf() async {
     if (_opening) {
@@ -30,30 +51,41 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _opening = true);
     try {
       final source = await _picker.pickPdf();
-      if (source == null || !mounted) {
+      if (source == null) {
         return;
       }
-
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (context) => PdfViewerScreen(
-            source: source,
-            settings: widget.settings,
-          ),
-        ),
-      );
+      await _openSource(source);
     } on Object catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open PDF: $error')),
-      );
+      _showOpenError(error);
     } finally {
       if (mounted) {
         setState(() => _opening = false);
       }
     }
+  }
+
+  Future<void> _openSource(PdfSource source) async {
+    if (!mounted) {
+      return;
+    }
+
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (context) => PdfViewerScreen(
+          source: source,
+          settings: widget.settings,
+        ),
+      ),
+    );
+  }
+
+  void _showOpenError(Object error) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Could not open PDF: $error')),
+    );
   }
 
   @override
