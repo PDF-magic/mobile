@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import 'package:flutter/material.dart';
+import 'package:pdfrx/pdfrx.dart';
+
+import 'home_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  pdfrxFlutterInitialize();
   runApp(const PdfMagicMobileApp());
 }
 
@@ -25,45 +30,7 @@ class PdfMagicMobileApp extends StatelessWidget {
         useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
-      home: const _BootstrapScreen(),
-    );
-  }
-}
-
-class _BootstrapScreen extends StatelessWidget {
-  const _BootstrapScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.picture_as_pdf_rounded,
-                  size: 72,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'PDF Magic Mobile',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Flutter foundation ready for the viewer and enhancer ports.',
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      home: const HomeScreen(),
     );
   }
 }
