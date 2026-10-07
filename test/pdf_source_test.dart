@@ -6,7 +6,7 @@ import 'package:pdf_magic_mobile/models/pdf_source.dart';
 void main() {
   group('PdfSource.pageReference', () {
     test('adds the current page to the original web reference', () {
-      const source = FilePdfSource(
+      final source = FilePdfSource(
         path: '/tmp/document.pdf',
         displayName: 'document.pdf',
         referenceUri: Uri.parse('https://example.com/document.pdf'),
@@ -19,7 +19,7 @@ void main() {
     });
 
     test('replaces an existing fragment with the current page', () {
-      const source = FilePdfSource(
+      final source = FilePdfSource(
         path: '/tmp/document.pdf',
         displayName: 'document.pdf',
         referenceUri: Uri.parse(
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('falls back to a local document label without a web reference', () {
-      const source = FilePdfSource(
+      final source = FilePdfSource(
         path: '/tmp/document.pdf',
         displayName: 'document.pdf',
       );

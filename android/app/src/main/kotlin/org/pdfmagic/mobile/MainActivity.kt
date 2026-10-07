@@ -29,10 +29,9 @@ class MainActivity : FlutterActivity() {
         }
 
         val uri = intent.data ?: streamUri(intent) ?: return
-        OpenFileHandlerPlugin.handleOpenURIs(
-            listOf(uri),
+        OpenFileHandlerPlugin.handleOpenURI(
+            uri,
             true,
-            intent.action != Intent.ACTION_SEND,
         )
     }
 

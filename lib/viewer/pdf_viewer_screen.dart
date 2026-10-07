@@ -96,7 +96,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
       _pageCount = document.pages.length;
       _currentPage = page;
       _pageInput.text = page.toString();
-      _outline = outline ?? const [];
+      _outline = outline;
     });
   }
 
