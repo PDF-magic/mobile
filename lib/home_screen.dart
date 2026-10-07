@@ -64,6 +64,65 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _openWebPdf() async {
+    final controller = TextEditingController();
+    final rawUrl = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Open web PDF'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            textInputAction: TextInputAction.go,
+            decoration: const InputDecoration(
+              labelText: 'HTTPS URL',
+              hintText: 'https://example.com/document.pdf',
+            ),
+            onSubmitted: (value) => Navigator.of(context).pop(value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: const Text('Open'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+
+    if (rawUrl == null || rawUrl.trim().isEmpty || !mounted) {
+      return;
+    }
+
+    final uri = Uri.tryParse(rawUrl.trim());
+    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
+      _showOpenError(
+        const FormatException('Use a complete HTTPS PDF URL.'),
+      );
+      return;
+    }
+
+    final lastSegment = uri.pathSegments.isEmpty ? '' : uri.pathSegments.last;
+    final displayName = lastSegment.trim().isEmpty
+        ? 'document.pdf'
+        : lastSegment;
+
+    await _openSource(
+      UriPdfSource(
+        uri: uri,
+        displayName: displayName,
+      ),
+    );
+  }
+
   Future<void> _openSource(PdfSource source) async {
     if (!mounted) {
       return;
@@ -144,6 +203,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                         : const Icon(Icons.folder_open_rounded),
                     label: const Text('Open PDF'),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: _openWebPdf,
+                    icon: const Icon(Icons.public_rounded),
+                    label: const Text('Open web PDF'),
                   ),
                 ],
               ),
